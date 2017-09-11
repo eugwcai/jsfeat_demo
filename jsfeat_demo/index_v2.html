@@ -110,19 +110,21 @@
                 compatibility.getUserMedia(constraints , function(stream) {
                     try {
                         video.src = compatibility.URL.createObjectURL(stream);
+                        video.srcObject = stream;
                     } catch (error) {
                         video.src = stream;
                     }
+
                     setTimeout(function() {
                             video.play();
                         }, 500);
+
                 }, function (error) {
                     $('#canvas').hide();
                     $('#log').hide();
                     $('#no_rtc').html('<h4>WebRTC not available.</h4>');
                     $('#no_rtc').show();
                 });
-                //video.srcObject = stream;
 
             } catch (error) {
                 $('#canvas').hide();
