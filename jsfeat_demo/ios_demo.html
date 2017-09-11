@@ -57,7 +57,11 @@ var constraints = {
 }
 
 navigator.mediaDevices.getUserMedia(constraints).then(function success(stream) {
-	video.srcObject = stream;
+	try {
+      video.src = compatibility.URL.createObjectURL(stream);
+  } catch (error) {
+      video.srcObject = stream;
+  }
 });
 
 document.body.appendChild(video);
