@@ -47,6 +47,26 @@
             "use strict";
             // loading webcam stream
             var video = document.getElementById('webcam');
+
+            video.style.width = document.width + 'px';
+            video.style.height = document.height + 'px';
+            video.setAttribute('autoplay', '');
+            video.setAttribute('muted', '');
+            video.setAttribute('playsinline', '');
+            var facingMode = "user";
+            var constraints = {
+                 audio: false,
+                 video: {
+                     facingMode: facingMode
+                 }
+            }
+
+            navigator.mediaDevices.getUserMedia(constraints).then(function success(stream) {
+                video.srcObject = stream;
+            });
+
+
+
             var canvas = document.getElementById('canvas');
             try {
                 var attempts = 0;
@@ -62,7 +82,8 @@
                             attempts++;
                             setTimeout(findVideoSize, 200);
                         } else {
-                            onDimensionsReady(640, 480);
+                            //onDimensionsReady(640, 480);
+                            onDimensionsReady($(window).width(), $(window).height());
                         }
                     }
                 };
@@ -118,10 +139,7 @@
             var pattern_corners, pattern_descriptors, pattern_preview;
             var matches, homo3x3, match_mask;
             var num_train_levels = 4;
-            //
-            var objFoundItr = 0;
-            var frameLoop = 1;
-            //
+
 
             var demo_opt = function(){
                 this.blur_size = 5;
@@ -310,7 +328,6 @@
                         //render_matches(ctx, matches, num_matches);
                         if(good_matches > 8){
                             render_pattern_shape(ctx);         
-                        }
                         }else{
                             document.getElementById("info1").innerHTML = "";
                         }
