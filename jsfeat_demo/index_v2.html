@@ -47,6 +47,22 @@
             "use strict";
             // loading webcam stream
             var video = document.getElementById('webcam');
+
+            /**/
+            video.setAttribute('autoplay', '');
+            video.setAttribute('muted', '');
+            video.setAttribute('playsinline', '');
+            /**/
+
+            var facingMode = "user";
+
+            var constraints = {
+                audio: false,
+                video: {
+                    facingMode: facingMode
+                }
+            }
+
             var canvas = document.getElementById('canvas');
             try {
                 var attempts = 0;
@@ -72,7 +88,8 @@
                 };
 
                 video.addEventListener('loadeddata', readyListener);
-                compatibility.getUserMedia({video: true}, function(stream) {
+                //compatibility.getUserMedia({video: true}, function(stream) {
+                compatibility.getUserMedia(constraints, function(stream) {
                 try {
                     video.src = compatibility.URL.createObjectURL(stream);
                 } catch (error) {
