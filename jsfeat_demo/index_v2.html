@@ -73,20 +73,20 @@
 
                 video.addEventListener('loadeddata', readyListener);
                 compatibility.getUserMedia({video: true}, function(stream) {
-                    try {
-                        video.src = compatibility.URL.createObjectURL(stream);
-                    } catch (error) {
-                        video.srcObject = stream;
-                    }
-                    setTimeout(function() {
-                            video.play();
-                        }, 500);
+                try {
+                    video.src = compatibility.URL.createObjectURL(stream);
+                } catch (error) {
+                    video.srcObject = stream;
+                }
+                setTimeout(function() {
+                    video.play();
+                    }, 500);
                 }, function (error) {
                     $('#canvas').hide();
                     $('#log').hide();
                     $('#no_rtc').html('<h4>WebRTC not available.</h4>');
                     $('#no_rtc').show();
-                });*/
+                });
             } catch (error) {
                 $('#canvas').hide();
                 $('#log').hide();
