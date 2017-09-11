@@ -61,9 +61,7 @@
                  }
             }
 
-            navigator.mediaDevices.getUserMedia(constraints).then(function success(stream) {
-                video.srcObject = stream;
-            });
+            
 
 
 
@@ -94,7 +92,22 @@
 
                 video.addEventListener('loadeddata', readyListener);
 
-                compatibility.getUserMedia({video: true}, function(stream) {
+                /*compatibility.getUserMedia({video: true}, function(stream) {
+                    try {
+                        video.src = compatibility.URL.createObjectURL(stream);
+                    } catch (error) {
+                        video.src = stream;
+                    }
+                    setTimeout(function() {
+                            video.play();
+                        }, 500);
+                }, function (error) {
+                    $('#canvas').hide();
+                    $('#log').hide();
+                    $('#no_rtc').html('<h4>WebRTC not available.</h4>');
+                    $('#no_rtc').show();
+                });*/
+                compatibility.getUserMedia(constraints , function(stream) {
                     try {
                         video.src = compatibility.URL.createObjectURL(stream);
                     } catch (error) {
@@ -109,6 +122,8 @@
                     $('#no_rtc').html('<h4>WebRTC not available.</h4>');
                     $('#no_rtc').show();
                 });
+                //video.srcObject = stream;
+
             } catch (error) {
                 $('#canvas').hide();
                 $('#log').hide();
