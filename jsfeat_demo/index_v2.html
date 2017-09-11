@@ -91,12 +91,15 @@
                   }
                 }
 
-                compatibility.getUserMedia(constraints, function(stream) {
+                compatibility.getUserMedia(constraints).then(function success(stream) {
+                    video.srcObject = stream;
+                });
+
+                document.body.appendChild(video);
+
+                /*compatibility.getUserMedia({video: true}, function(stream) {
                     try {
                         video.src = compatibility.URL.createObjectURL(stream);
-
-                        video.srcObject = stream;
-
                     } catch (error) {
                         video.src = stream;
                     }
@@ -108,7 +111,7 @@
                     $('#log').hide();
                     $('#no_rtc').html('<h4>WebRTC not available.</h4>');
                     $('#no_rtc').show();
-                });
+                });*/
             } catch (error) {
                 $('#canvas').hide();
                 $('#log').hide();
