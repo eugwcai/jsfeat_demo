@@ -57,7 +57,7 @@ var constraints = {
 }
 
 navigator.mediaDevices.getUserMedia(constraints).then(function success(stream) {
-	video.src = stream;
+	video.srcObject = stream;
 });
 
 document.body.appendChild(video);
