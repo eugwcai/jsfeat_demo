@@ -47,24 +47,6 @@
             "use strict";
             // loading webcam stream
             var video = document.getElementById('webcam');
-
-            video.style.width = document.width + 'px';
-            video.style.height = document.height + 'px';
-            video.setAttribute('autoplay', '');
-            video.setAttribute('muted', '');
-            video.setAttribute('playsinline', '');
-            var facingMode = "user";
-            var constraints = {
-                 audio: false,
-                 video: {
-                     facingMode: facingMode
-                 }
-            }
-
-            
-
-
-
             var canvas = document.getElementById('canvas');
             try {
                 var attempts = 0;
@@ -80,8 +62,7 @@
                             attempts++;
                             setTimeout(findVideoSize, 200);
                         } else {
-                            //onDimensionsReady(640, 480);
-                            onDimensionsReady($(window).width(), $(window).height());
+                            onDimensionsReady(640, 480);
                         }
                     }
                 };
@@ -92,7 +73,7 @@
 
                 video.addEventListener('loadeddata', readyListener);
 
-                /*compatibility.getUserMedia({video: true}, function(stream) {
+                compatibility.getUserMedia({video: true}, function(stream) {
                     try {
                         video.src = compatibility.URL.createObjectURL(stream);
                     } catch (error) {
@@ -101,31 +82,12 @@
                     setTimeout(function() {
                             video.play();
                         }, 500);
-                }, function (error) {
-                    $('#canvas').hide();
-                    $('#log').hide();
-                    $('#no_rtc').html('<h4>WebRTC not available.</h4>');
-                    $('#no_rtc').show();
-                });*/
-                compatibility.getUserMedia(constraints , function(stream) {
-                    try {
-                        video.src = compatibility.URL.createObjectURL(stream);
-                        video.srcObject = stream;
-                    } catch (error) {
-                        video.src = stream;
-                    }
-
-                    setTimeout(function() {
-                            video.play();
-                        }, 500);
-
                 }, function (error) {
                     $('#canvas').hide();
                     $('#log').hide();
                     $('#no_rtc').html('<h4>WebRTC not available.</h4>');
                     $('#no_rtc').show();
                 });
-
             } catch (error) {
                 $('#canvas').hide();
                 $('#log').hide();
