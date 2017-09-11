@@ -78,9 +78,10 @@
                 compatibility.getUserMedia({video: true}, function(stream) {
                     try {
                         video.srcObj = stream;
-                        
+
                     } catch (error) {
-                        video.src = compatibility.URL.createObjectURL(stream);
+                        $('#no_rtc').html('<h4>error generated</h4>');
+                        //video.src = compatibility.URL.createObjectURL(stream);
                     }
                     setTimeout(function() {
                             video.play();
