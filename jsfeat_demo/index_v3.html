@@ -7,6 +7,8 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
         <meta name="description" content="A JavaScript Computer Vision Library">
         <meta name="author" content="Eugene Zatepyakin">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
         <title>JSFeat - JavaScript Computer Vision Library.</title>
 
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Sans:regular,bold|Inconsolata|PT+Sans:400,700">
@@ -26,9 +28,9 @@
     </head>
     <body>
             <div style="position:fixed; left:5px; top:5px; color:green; background-color:black; font-size:20px" id="info1"></div>
-            <video id="webcam" width="1000" height="1000" style="display:none;"></video>
-            <div style=" width:1000px;height:1000px;margin: 10px auto;">
-                <canvas id="canvas" width="1000" height="1000"></canvas>
+            <video id="webcam" width="640" height="480" style="display:none;"></video>
+            <div id="container" style="width:640px;height:480px;margin: 10px auto;">
+                <canvas id="canvas" width="640" height="480"></canvas>
                 <div id="no_rtc" class="alert alert-error" style="display:none;"></div>
                 <div id="log" class="alert alert-info"></div>
             </div>
@@ -46,6 +48,14 @@
         $(window).load(function() {
             "use strict";
             // loading webcam stream
+            document.getElementById("webcam").style.maxWidth = "100%";
+            document.getElementById("webcam").style.height = "auto";
+            document.getElementById("container").style.maxWidth = "100%";
+            document.getElementById("container").style.height = "auto";
+            document.getElementById("canvas").style.maxWidth = "100%";
+            document.getElementById("canvas").style.height = "auto";
+
+
             var video = document.getElementById('webcam');
 
             /**/
@@ -60,8 +70,7 @@
                 audio: false,
                 video: {
                     facingMode: facingMode
-                },
-                orientation: "landscape"
+                }
             }
 
             var canvas = document.getElementById('canvas');
@@ -89,6 +98,7 @@
                 };
 
                 video.addEventListener('loadeddata', readyListener);
+                //compatibility.getUserMedia({video: true}, function(stream) {
                 compatibility.getUserMedia(constraints, function(stream) {
                 try {
                     video.src = compatibility.URL.createObjectURL(stream);
@@ -276,8 +286,8 @@
                 stat.new_frame();
                 if (video.readyState === video.HAVE_ENOUGH_DATA) {
                     // Load in single frame from webcam stream
-                    ctx.drawImage(video, 0, 0, 1000, 1000);
-                    var imageData = ctx.getImageData(0, 0, 1000, 1000);  
+                    ctx.drawImage(video, 0, 0, 640, 480);
+                    var imageData = ctx.getImageData(0, 0, 640, 480);  
                     //
                     //ctx.drawImage(document.getElementById("large_image"), 0, 0);
                     //var imageData = ctx.getImageData(0, 0, 640, 480);
@@ -304,7 +314,7 @@
 
                     // render result back to canvas
                     var data_u32 = new Uint32Array(imageData.data.buffer);
-                    render_corners(screen_corners, num_corners, data_u32, 640);
+                    //render_corners(screen_corners, num_corners, data_u32, 640);
 
                     // render pattern and matches
                     var num_matches = 0;
@@ -320,7 +330,7 @@
                     ctx.putImageData(imageData, 0, 0);
 
                     if(num_matches) {
-                        render_matches(ctx, matches, num_matches);
+                        //render_matches(ctx, matches, num_matches);
                         if(good_matches > 8){
                             render_pattern_shape(ctx);         
                         }else{
