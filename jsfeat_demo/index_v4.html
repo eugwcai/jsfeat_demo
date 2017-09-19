@@ -7,8 +7,6 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
         <meta name="description" content="A JavaScript Computer Vision Library">
         <meta name="author" content="Eugene Zatepyakin">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-
         <title>JSFeat - JavaScript Computer Vision Library.</title>
 
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Sans:regular,bold|Inconsolata|PT+Sans:400,700">
@@ -26,13 +24,13 @@
           })();
         </script>
     </head>
-    <body>
+    <body style="overflow:hidden">
             <div style="position:fixed; left:5px; top:5px; color:green; background-color:black; font-size:20px" id="info1"></div>
-            <video id="webcam" style="display:none; width:100vw; height:100vh"></video>
-            <div id="container" style="width:100vw; height:100vh; margin: 10px auto;">
-                <canvas id="canvas" style="width: 100vw; height: 100vh" ></canvas>
+            <video id="webcam" width="640" height="480" style="display:none;"></video>
+            <div style=" width:640px;height:480px" id="container">
+                <canvas id="canvas" width="640" height="480"></canvas>
                 <div id="no_rtc" class="alert alert-error" style="display:none;"></div>
-                <div style="display:none" id="log" class="alert alert-info"></div>
+                <div id="log" class="alert alert-info" style="display:none"></div>
             </div>
 
             <!-- IMPORT IMAGE PATTERN HERE -->
@@ -48,15 +46,18 @@
         $(window).load(function() {
             "use strict";
             // loading webcam stream
-            /*document.getElementById("webcam").style.maxWidth = "100%";
-            document.getElementById("webcam").style.height = "auto";
-            document.getElementById("container").style.maxWidth = "100%";
-            document.getElementById("container").style.height = "auto";
-            document.getElementById("canvas").style.maxWidth = "100%";
-            document.getElementById("canvas").style.height = "auto";
-            */
-
             var video = document.getElementById('webcam');
+            // loading webcam stream
+            var vpw = $(window).width();
+            var vph = $(window).height();
+            document.getElementById("webcam").width = vpw;
+            document.getElementById("webcam").height = vph;
+            document.getElementById("container").style.width = vpw + "px";
+            document.getElementById("container").style.height = vph + "px";
+            document.getElementById("canvas").width = vpw;
+            document.getElementById("canvas").height = vph;
+            
+
 
             /**/
             video.setAttribute('autoplay', '');
@@ -68,10 +69,8 @@
 
             var constraints = {
                 audio: false,
-                display: "fullscreen",
                 video: {
-                    facingMode: facingMode,
-                    orientation: "landscape"
+                    facingMode: facingMode
                 }
             }
 
@@ -100,8 +99,8 @@
                 };
 
                 video.addEventListener('loadeddata', readyListener);
-                //compatibility.getUserMedia({video: true}, function(stream) {
-                compatibility.getUserMedia(constraints, function(stream) {
+                //compatibility.getUserMedia({video: true}, function(stream) { for just browser compatibility
+                compatibility.getUserMedia(constraints, function(stream) { // mobile compatibility
                 try {
                     video.src = compatibility.URL.createObjectURL(stream);
                 } catch (error) {
@@ -288,7 +287,6 @@
                 stat.new_frame();
                 if (video.readyState === video.HAVE_ENOUGH_DATA) {
                     // Load in single frame from webcam stream
-
                     var vpw = $(window).width();
                     var vph = $(window).height();
                     ctx.drawImage(video, 0, 0, vpw, vph);
