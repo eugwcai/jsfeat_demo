@@ -5,9 +5,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-        <meta name="description" content="A JavaScript Computer Vision Library">
-        <meta name="author" content="Eugene Zatepyakin">
-        <title>JSFeat - JavaScript Computer Vision Library.</title>
+        <title>Augmented Reality Investment Project</title>
 
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Sans:regular,bold|Inconsolata|PT+Sans:400,700">
         <link rel="stylesheet" href="css/bootstrap.css">
@@ -23,19 +21,29 @@
             var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
           })();
         </script>
+        <style>
+        html, body {
+            overflow: hidden;
+            position: relative;
+            height: 100%;
+        }
+        </style>
     </head>
     <body>
             <div style="position:fixed; left:5px; top:5px; color:green; background-color:black; font-size:20px" id="info1"></div>
-            <video id="webcam" width="640" height="480" style="display:none;"></video>
-            <div style=" width:640px;height:480px;margin: 10px auto;">
+            <!--<video id="webcam" width="640" height="480" style="display:none;"></video>
+            <div style=" width:640px;height:480px" id="container">
                 <canvas id="canvas" width="640" height="480"></canvas>
                 <div id="no_rtc" class="alert alert-error" style="display:none;"></div>
-                <div id="log" class="alert alert-info"></div>
+                <div id="log" class="alert alert-info" style="display:none"></div>-->
+            <video id="webcam" style="display:none;"></video>
+            <div id="container">
+                <canvas id="canvas"></canvas>
             </div>
 
             <!-- IMPORT IMAGE PATTERN HERE -->
-            <!-- <img id="pattern" src="resources/artargetimage_640_480.png" style="visibility:hidden"> -->
-            <img id="pattern" src="resources/tail_number_640_480.png" style="visibility:hidden">
+            <!--<img id="pattern" src="resources/tail_number_640_480.png" style="visibility:hidden">-->
+            <img id="pattern" src="resources/artargetimage_640_480.png" style="visibility:hidden">
             
         <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
         <script type="text/javascript" src="build/jsfeat-min.js"></script>
@@ -47,6 +55,27 @@
             "use strict";
             // loading webcam stream
             var video = document.getElementById('webcam');
+            // loading webcam stream
+
+            $( window ).resize(function() {
+            var vpw = $(window).width();
+            var vph = $(window).height();
+            document.getElementById("webcam").width = vpw;
+            document.getElementById("webcam").height = vph;
+            document.getElementById("container").style.width = vpw + "px";
+            document.getElementById("container").style.height = vph + "px";
+            document.getElementById("canvas").width = vpw;
+            document.getElementById("canvas").height = vph;
+            });
+
+            var vpw = $(window).width();
+            var vph = $(window).height();
+            document.getElementById("webcam").width = vpw;
+            document.getElementById("webcam").height = vph;
+            document.getElementById("container").style.width = vpw + "px";
+            document.getElementById("container").style.height = vph + "px";
+            document.getElementById("canvas").width = vpw;
+            document.getElementById("canvas").height = vph;
 
             /**/
             video.setAttribute('autoplay', '');
@@ -88,8 +117,8 @@
                 };
 
                 video.addEventListener('loadeddata', readyListener);
-                //compatibility.getUserMedia({video: true}, function(stream) {
-                compatibility.getUserMedia(constraints, function(stream) {
+                //compatibility.getUserMedia({video: true}, function(stream) { for just browser compatibility
+                compatibility.getUserMedia(constraints, function(stream) { // mobile compatibility
                 try {
                     video.src = compatibility.URL.createObjectURL(stream);
                 } catch (error) {
@@ -276,7 +305,9 @@
                 stat.new_frame();
                 if (video.readyState === video.HAVE_ENOUGH_DATA) {
                     // Load in single frame from webcam stream
-                    ctx.drawImage(video, 0, 0, 640, 480);
+                    var vpw = $(window).width();
+                    var vph = $(window).height();
+                    ctx.drawImage(video, 0, 0, vpw, vph);
                     var imageData = ctx.getImageData(0, 0, 640, 480);  
                     //
                     //ctx.drawImage(document.getElementById("large_image"), 0, 0);

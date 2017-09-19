@@ -47,6 +47,24 @@
             "use strict";
             // loading webcam stream
             var video = document.getElementById('webcam');
+
+            /**/
+            video.setAttribute('autoplay', '');
+            video.setAttribute('muted', '');
+            video.setAttribute('playsinline', '');
+            /**/
+
+            var facingMode = "environment";
+
+            var constraints = {
+                audio: false,
+                display: "fullscreen",
+                orientation: "landscape",
+                video: {
+                    facingMode: facingMode
+                }
+            }
+
             var canvas = document.getElementById('canvas');
             try {
                 var attempts = 0;
@@ -72,16 +90,16 @@
                 };
 
                 video.addEventListener('loadeddata', readyListener);
-
-                compatibility.getUserMedia({video: true}, function(stream) {
-                    try {
-                        video.src = compatibility.URL.createObjectURL(stream);
-                    } catch (error) {
-                        video.src = stream;
-                    }
-                    setTimeout(function() {
-                            video.play();
-                        }, 500);
+                //compatibility.getUserMedia({video: true}, function(stream) { for just browser compatibility
+                compatibility.getUserMedia(constraints, function(stream) { // mobile compatibility
+                try {
+                    video.src = compatibility.URL.createObjectURL(stream);
+                } catch (error) {
+                    video.srcObject = stream;
+                }
+                setTimeout(function() {
+                    video.play();
+                    }, 500);
                 }, function (error) {
                     $('#canvas').hide();
                     $('#log').hide();
@@ -118,9 +136,7 @@
             var pattern_corners, pattern_descriptors, pattern_preview;
             var matches, homo3x3, match_mask;
             var num_train_levels = 4;
-            //
-            var objFound = false;
-            //
+
 
             var demo_opt = function(){
                 this.blur_size = 5;
@@ -290,14 +306,13 @@
 
                     // render result back to canvas
                     var data_u32 = new Uint32Array(imageData.data.buffer);
-                    //render_corners(screen_corners, num_corners, data_u32, 640);
+                    render_corners(screen_corners, num_corners, data_u32, 640);
 
                     // render pattern and matches
                     var num_matches = 0;
                     var good_matches = 0;
                     if(pattern_preview) {
-                        //render_mono_image(pattern_preview.data, data_u32, pattern_preview.cols, pattern_preview.rows, 640);
-
+                        render_mono_image(pattern_preview.data, data_u32, pattern_preview.cols, pattern_preview.rows, 640);
                         stat.start("matching");
                         num_matches = match_pattern();
                         good_matches = find_transform(matches, num_matches);
@@ -307,11 +322,12 @@
                     ctx.putImageData(imageData, 0, 0);
 
                     if(num_matches) {
-                        //render_matches(ctx, matches, num_matches);
+                        render_matches(ctx, matches, num_matches);
                         if(good_matches > 8){
-                            objFound = true;
-                            render_pattern_shape(ctx);
-                        }else{objFound = false; render_pattern_shape(ctx);}
+                            render_pattern_shape(ctx);         
+                        }else{
+                            document.getElementById("info1").innerHTML = "";
+                        }
                     }
 
                     $('#log').html(stat.log());
@@ -319,7 +335,6 @@
             }
 
             // UTILITIES
-
             function detect_keypoints(img, corners, max_allowed) {
                 // detect features
                 var count = jsfeat.yape06.detect(img, corners, 17);
@@ -368,8 +383,7 @@
                 return Math.atan2(m_01, m_10);
             }
 
-            // estimate homography transform between matched points
-            function find_transform(matches, count) {
+            function find_transform(matches, count) { // estimate homography transform between matched points
                 // motion kernel
                 var mm_kernel = new jsfeat.motion_model.homography2d();
                 // ransac params
@@ -416,17 +430,13 @@
                 return good_cnt;
             }
 
-            // non zero bits count
-            function popcnt32(n) {
+            function popcnt32(n) { // non zero bits count
                 n -= ((n >> 1) & 0x55555555);
                 n = (n & 0x33333333) + ((n >> 2) & 0x33333333);
                 return (((n + (n >> 4))& 0xF0F0F0F)* 0x1010101) >> 24;
             }
 
-            // naive brute-force matching.
-            // each on screen point is compared to all pattern points
-            // to find the closest match
-            function match_pattern() {
+            function match_pattern() { // naive brute-force matching each on screen point is compared to all pattern points to find the closest match
                 var q_cnt = screen_descriptors.rows;
                 var query_du8 = screen_descriptors.data;
                 var query_u32 = screen_descriptors.buffer.i32; // cast to integer buffer
@@ -491,8 +501,7 @@
                 return num_matches;
             }
 
-            // project/transform rectangle corners with 3x3 Matrix
-            function tCorners(M, w, h) {
+            function tCorners(M, w, h) {  // project/transform rectangle corners with 3x3 Matrix
                 var pt = [ {'x':0,'y':0}, {'x':w,'y':0}, {'x':w,'y':h}, {'x':0,'y':h} ];
                 var z=0.0, i=0, px=0.0, py=0.0;
 
@@ -507,7 +516,7 @@
                 return pt;
             }
 
-            function render_matches(ctx, matches, count) {  // rendering the lines connecting the matches between webcam stream and image pattern
+            function render_matches(ctx, matches, count) {  // rendering the lines connecting the corners between webcam stream and image pattern
                 for(var i = 0; i < count; ++i) {
                     var m = matches[i];
                     var s_kp = screen_corners[m.screen_idx];
@@ -527,22 +536,17 @@
 
             function render_pattern_shape(ctx) {  // render a shape or create UI when object is detected (good matches > 8)
                 // get the projected pattern corners
-                if(objFound){
-                    document.getElementById("info1").innerHTML = "OBJECT FOUND";
-                    var shape_pts = tCorners(homo3x3.data, pattern_preview.cols*2, pattern_preview.rows*2);
-
-                    ctx.strokeStyle = "rgb(0,255,0)";
-                    ctx.beginPath();
-                    ctx.moveTo(shape_pts[0].x,shape_pts[0].y);
-                    ctx.lineTo(shape_pts[1].x,shape_pts[1].y);
-                    ctx.lineTo(shape_pts[2].x,shape_pts[2].y);
-                    ctx.lineTo(shape_pts[3].x,shape_pts[3].y);
-                    ctx.lineTo(shape_pts[0].x,shape_pts[0].y);
-                    ctx.lineWidth=4;
-                    ctx.stroke();
-                }else{
-                    document.getElementById("info1").innerHTML = "";
-                }
+                document.getElementById("info1").innerHTML = "OBJECT FOUND";
+                var shape_pts = tCorners(homo3x3.data, pattern_preview.cols*2, pattern_preview.rows*2);
+                ctx.strokeStyle = "rgb(0,255,0)";
+                ctx.beginPath();
+                ctx.moveTo(shape_pts[0].x,shape_pts[0].y);
+                ctx.lineTo(shape_pts[1].x,shape_pts[1].y);
+                ctx.lineTo(shape_pts[2].x,shape_pts[2].y);
+                ctx.lineTo(shape_pts[3].x,shape_pts[3].y);
+                ctx.lineTo(shape_pts[0].x,shape_pts[0].y);
+                ctx.lineWidth=4;
+                ctx.stroke();     
             }
 
             function render_corners(corners, count, img, step) {  // render corners on the webcam stream
@@ -560,7 +564,7 @@
                 }
             }
 
-            function render_mono_image(src, dst, sw, sh, dw) { // 
+            function render_mono_image(src, dst, sw, sh, dw) { // render mono preview of image pattern
                 var alpha = (0xff << 24);
                 for(var i = 0; i < sh; ++i) {
                     for(var j = 0; j < sw; ++j) {

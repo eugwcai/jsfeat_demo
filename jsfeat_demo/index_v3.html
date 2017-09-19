@@ -5,9 +5,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-        <meta name="description" content="A JavaScript Computer Vision Library">
-        <meta name="author" content="Eugene Zatepyakin">
-        <title>JSFeat - JavaScript Computer Vision Library.</title>
+        <title>Augmented Reality Investment Project</title>
 
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Sans:regular,bold|Inconsolata|PT+Sans:400,700">
         <link rel="stylesheet" href="css/bootstrap.css">
@@ -33,16 +31,21 @@
     </head>
     <body>
             <div style="position:fixed; left:5px; top:5px; color:green; background-color:black; font-size:20px" id="info1"></div>
-            <video id="webcam" width="640" height="480" style="display:none;"></video>
+            <!--<video id="webcam" width="640" height="480" style="display:none;"></video>
             <div style=" width:640px;height:480px" id="container">
                 <canvas id="canvas" width="640" height="480"></canvas>
-                <!--<div id="no_rtc" class="alert alert-error" style="display:none;"></div>
+                <div id="no_rtc" class="alert alert-error" style="display:none;"></div>
                 <div id="log" class="alert alert-info" style="display:none"></div>-->
+            <video id="webcam" style="display:none;"></video>
+            <div id="container">
+                <canvas id="canvas"></canvas>
             </div>
 
             <!-- IMPORT IMAGE PATTERN HERE -->
-            <!-- <img id="pattern" src="resources/artargetimage_640_480.png" style="visibility:hidden"> -->
-            <img id="pattern" src="resources/tail_number_640_480.png" style="visibility:hidden">
+            <!--<img id="pattern" src="resources/tail_number_640_480.png" style="visibility:hidden">-->
+            <!--<img id="pattern" src="resources/artargetimage_640_480.png" style="visibility:hidden">-->
+            <img id="pattern" src="resources/tail_number_840_630.png" style="visibility:hidden">
+            <!--<img id="pattern" src="resources/artargetimage_256x192.png" style="visibility:hidden">-->
             
         <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
         <script type="text/javascript" src="build/jsfeat-min.js"></script>
@@ -55,6 +58,8 @@
             // loading webcam stream
             var video = document.getElementById('webcam');
             // loading webcam stream
+
+            $( window ).resize(function() {
             var vpw = $(window).width();
             var vph = $(window).height();
             document.getElementById("webcam").width = vpw;
@@ -63,8 +68,16 @@
             document.getElementById("container").style.height = vph + "px";
             document.getElementById("canvas").width = vpw;
             document.getElementById("canvas").height = vph;
-            
+            });
 
+            var vpw = $(window).width();
+            var vph = $(window).height();
+            document.getElementById("webcam").width = vpw;
+            document.getElementById("webcam").height = vph;
+            document.getElementById("container").style.width = vpw + "px";
+            document.getElementById("container").style.height = vph + "px";
+            document.getElementById("canvas").width = vpw;
+            document.getElementById("canvas").height = vph;
 
             /**/
             video.setAttribute('autoplay', '');
@@ -166,24 +179,29 @@
                     var max_pattern_size = 512;
                     var max_per_level = 300;
                     var sc_inc = Math.sqrt(2.0); // magic number ;)
-                    var lev0_img = new jsfeat.matrix_t(img_u8.cols, img_u8.rows, jsfeat.U8_t | jsfeat.C1_t);
-                    var lev_img = new jsfeat.matrix_t(img_u8.cols, img_u8.rows, jsfeat.U8_t | jsfeat.C1_t);
-                    var new_width=0, new_height=0;
-                    var lev_corners, lev_descr;
-                    var corners_num=0;
-
-                    var sc0 = Math.min(max_pattern_size/img_u8.cols, max_pattern_size/img_u8.rows);
-                    new_width = (img_u8.cols*sc0)|0;
-                    new_height = (img_u8.rows*sc0)|0;
-
 
                     //
                     var img = document.getElementById("pattern");
                     ctx.drawImage(document.getElementById("pattern"), 0, 0);
                     var imageData = ctx.getImageData(0, 0, img.width, img.height);
-                    //
+                    var col = img.naturalWidth;
+                    var row = img.naturalHeight;
+                    //    
+
+                    var lev0_img = new jsfeat.matrix_t(col, row, jsfeat.U8_t | jsfeat.C1_t);
+                    var lev_img = new jsfeat.matrix_t(col, row, jsfeat.U8_t | jsfeat.C1_t);
+                    var new_width=0, new_height=0;
+                    var lev_corners, lev_descr;
+                    var corners_num=0;
+
+                    var sc0 = Math.min(max_pattern_size/col, max_pattern_size/row);
+                    new_width = (col*sc0)|0;
+                    new_height = (row*sc0)|0;
+
+
+                    
                     stat.start("grayscale");
-                    jsfeat.imgproc.grayscale(imageData.data, imageData.width, imageData.height, img_u8); // Defines values for img_u8
+                    jsfeat.imgproc.grayscale(imageData.data, col, row, img_u8); // Defines values for img_u8
                     stat.stop("grayscale");
                     jsfeat.imgproc.resample(img_u8, lev0_img, new_width, new_height);  // modify lev0_img data array field
 
@@ -251,10 +269,13 @@
 
                 ctx.fillStyle = "rgb(0,255,0)";
                 ctx.strokeStyle = "rgb(0,255,0)";
+                
+                var vpw = $(window).width();
+                var vph = $(window).height();
 
-                img_u8 = new jsfeat.matrix_t(640, 480, jsfeat.U8_t | jsfeat.C1_t);
+                img_u8 = new jsfeat.matrix_t(vpw, vph, jsfeat.U8_t | jsfeat.C1_t);
                 // after blur
-                img_u8_smooth = new jsfeat.matrix_t(640, 480, jsfeat.U8_t | jsfeat.C1_t);
+                img_u8_smooth = new jsfeat.matrix_t(vpw, vph, jsfeat.U8_t | jsfeat.C1_t);
                 // we wll limit to 500 strongest points
                 screen_descriptors = new jsfeat.matrix_t(32, 500, jsfeat.U8_t | jsfeat.C1_t);
                 pattern_descriptors = [];
@@ -297,14 +318,14 @@
                     var vpw = $(window).width();
                     var vph = $(window).height();
                     ctx.drawImage(video, 0, 0, vpw, vph);
-                    var imageData = ctx.getImageData(0, 0, 640, 480);  
-                    //
+                    var imageData = ctx.getImageData(0, 0, vpw, vph);  
+                    //ewq
                     //ctx.drawImage(document.getElementById("large_image"), 0, 0);
                     //var imageData = ctx.getImageData(0, 0, 640, 480);
                     //
 
                     stat.start("grayscale");
-                    jsfeat.imgproc.grayscale(imageData.data, 640, 480, img_u8); // Defines values for img_u8
+                    jsfeat.imgproc.grayscale(imageData.data, vpw, vph, img_u8); // Defines values for img_u8
                     stat.stop("grayscale");
 
                     stat.start("gauss blur");
@@ -324,13 +345,13 @@
 
                     // render result back to canvas
                     var data_u32 = new Uint32Array(imageData.data.buffer);
-                    //render_corners(screen_corners, num_corners, data_u32, 640);
+                    render_corners(screen_corners, num_corners, data_u32, 640);
 
                     // render pattern and matches
                     var num_matches = 0;
                     var good_matches = 0;
                     if(pattern_preview) {
-                        //render_mono_image(pattern_preview.data, data_u32, pattern_preview.cols, pattern_preview.rows, 640);
+                        render_mono_image(pattern_preview.data, data_u32, pattern_preview.cols, pattern_preview.rows, 640);
                         stat.start("matching");
                         num_matches = match_pattern();
                         good_matches = find_transform(matches, num_matches);
@@ -340,7 +361,7 @@
                     ctx.putImageData(imageData, 0, 0);
 
                     if(num_matches) {
-                        //render_matches(ctx, matches, num_matches);
+                        render_matches(ctx, matches, num_matches);
                         if(good_matches > 8){
                             render_pattern_shape(ctx);         
                         }else{
