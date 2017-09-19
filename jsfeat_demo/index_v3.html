@@ -23,14 +23,21 @@
             var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
           })();
         </script>
+        <style>
+        html, body {
+            overflow: hidden;
+            position: relative;
+            height: 100%;
+        }
+        </style>
     </head>
-    <body style="overflow:hidden">
+    <body>
             <div style="position:fixed; left:5px; top:5px; color:green; background-color:black; font-size:20px" id="info1"></div>
             <video id="webcam" width="640" height="480" style="display:none;"></video>
             <div style=" width:640px;height:480px" id="container">
                 <canvas id="canvas" width="640" height="480"></canvas>
-                <div id="no_rtc" class="alert alert-error" style="display:none;"></div>
-                <div id="log" class="alert alert-info" style="display:none"></div>
+                <!--<div id="no_rtc" class="alert alert-error" style="display:none;"></div>
+                <div id="log" class="alert alert-info" style="display:none"></div>-->
             </div>
 
             <!-- IMPORT IMAGE PATTERN HERE -->
