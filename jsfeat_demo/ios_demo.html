@@ -1,93 +1,108 @@
-
-
 <!DOCTYPE html>
-<html >
-
+<html>
 <head>
-  <meta charset="UTF-8">
-  <link rel="shortcut icon" type="image/x-icon" href="https://production-assets.codepen.io/assets/favicon/favicon-8ea04875e70c4b0bb41da869e81236e54394d63638a1ef12fa558a4a835f1164.ico" />
-  <link rel="mask-icon" type="" href="https://production-assets.codepen.io/assets/favicon/logo-pin-f2d2b6d2c61838f7e76325261b7195c27224080bc099486ddd6dccb469b8e8e6.svg" color="#111" />
-  <meta name="robots" content="noindex">
-  <title>CodePen - Hello, WebRTC on Safari 11</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css">
-
-  
-      <style>
-      html, body{
-  height: 100%;
-  overflow: hidden;
-  width: 100%;
+<title>AWE Marker AR demo</title>
+<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+<meta charset="utf-8"/>
+<style type="text/css">
+* {
+  margin: 0;
+  padding: 0;
 }
-
-video{
-  left: 50%;
+#container {
   position: absolute;
-  transform: translate(-50%, -50%);
+  left: 0;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  overflow: hidden;
+}
+#debugCanvas {
+  position: absolute;
+  z-index: 999;
+  opacity: 0.5;
   top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
-    </style>
-
-  
-  
-  
-  
+</style>
 </head>
+<body>
+  <canvas id="debugCanvas"></canvas>
+<div id="container"></div>
+<script type="text/javascript" src="js/js_awe/awe-v8.js"></script>
+<script type="text/javascript" src="js/js_awe/js/awe-loader.js"></script>
+<script type="text/javascript">
+//   DEBUG = true;
+  window.addEventListener('load', function() {
+    window.awe.init({
+      device_type: awe.AUTO_DETECT_DEVICE_TYPE,
+      settings: {
+        container_id: 'container',
+        default_camera_position: { x:0, y:0, z:0 },
+        default_lights:[
+          {
+            id: 'ambient_light',
+            type: 'ambient',
+            color: 0x666666
+          },
+          {
+            id: 'hemi',
+            type: 'hemisphere',
+            color: 0xCCCCCC,
+          },
+        ],
+      },
+      ready: function() {
+        var d = '?_='+Date.now();
+        
+        awe.util.require([
+          {
+            capabilities: ['gum','webgl'],
+            files: [ 
+              // base libraries
+              [ '../../js/awe-standard-dependencies.js', 'js/js_awe/js/awe-standard.js'+d],
+              // plugin dependencies
+              ['awe-jsartoolkit-dependencies.js','js/js_awe/js/plugins/StereoEffect.js', 'js/js_awe/js/plugins/VREffect.js'],
+              // plugins
+              ['awe.marker_ar.js'+d,'js/js_awe/js/plugins/awe.rendering_effects.js'+d]
+            ],
+            success: function() { 
+              awe.setup_scene();
+              
+              awe.settings.update({data:{value: 'ar'}, where:{id: 'view_mode'}})
 
-<body translate="no" >
+              awe.pois.add({ id: 'fixed_poi', position: { x: 100, y: 0, z: -250 }, visible: true, scale: { x: 10, y: 10, z: 10 },  rotation: { x: 110, y: 185, z: -20 }});
+              awe.projections.add({ 
+                id: 'fixed_projection', 
+                geometry: { path: 'models/objects/f14d.obj'},
+                position: { x: 0, y: 0, z: 0 },
+                material:{ type: 'phong', color: 0xb0c4de  }, 
+              }, { poi_id: 'fixed_poi' });
 
-  
-  
-  
-    <script>
-    navigator.getUserMedia  = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+              // animate the fixed POI
+              awe.projections.update({
+                data:{
+                  animation: { duration: 5, persist: 0, repeat: Infinity },
+                  rotation: { z:360  },
+                },
+                where:{ id:"fixed_projection" },
+              });
 
-var video = document.createElement('video');
-video.style.width =  document.width + 'px';
-video.style.height = document.height + 'px';
-video.setAttribute('autoplay', '');
-video.setAttribute('muted', '');
-video.setAttribute('playsinline', '');
-
-var facingMode = "user";
-
-var constraints = {
-  audio: false,
-  video: {
-    facingMode: facingMode
-  }
-}
-
-navigator.mediaDevices.getUserMedia(constraints).then(function success(stream) {
-	video.srcObject = stream;
-});
-
-document.body.appendChild(video);
-
-video.addEventListener('click', function() {
-  if (facingMode == "user") {
-    facingMode = "environment";
-  } else {
-    facingMode = "user";
-  }
-  
-  constraints = {
-    audio: false,
-    video: {
-      facingMode: facingMode
-    }
-  }  
-  
-  navigator.mediaDevices.getUserMedia(constraints).then(function success(stream) {
-	  video.srcObject = stream;	
+              awe.plugins.view('render_effects').enable();
+              awe.plugins.view('jsartoolkit').enable();
+            },
+          },
+          {
+            capabilities: [],
+            success: function() { 
+              document.body.innerHTML = '<p>Try this demo in the latest version of Chrome or Firefox on a PC or Android device</p>';
+            },
+          },
+        ]);
+      }
+    });
   });
-});
-  </script>
-
-  
-  
-
+</script>
 </body>
 </html>
- 
