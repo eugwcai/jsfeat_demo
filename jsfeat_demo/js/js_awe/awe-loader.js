@@ -1010,8 +1010,15 @@
       }
       catch(e) { /* TODO */ };
     }
-    
-    var _get_user_media = undefined, 
+    var facingMode = "environment";
+    var constraints = {
+        audio: false,
+        video: {
+            facingMode: facingMode
+        }
+    }
+
+    var _get_user_media = constraints, 
       _connect_stream_to_src = function(){},
       _stream_targets = {},
       _disconnect_stream = function(){},
@@ -1027,7 +1034,12 @@
       _get_user_media = navigator.getUserMedia.bind(navigator);
       _connect_stream_to_src = function(media_stream, media_element, identifier) {
         
-        media_element.srcObject = media_stream;
+        try {
+          media_element.src = navigator.URL.createObjectURL(media_stream);
+        } catch (error) {
+          media_element.srcObject = media_stream;
+        }
+
         media_element.play();
         if (!identifier) {
           media_element.setAttribute('data-source-id', '_system');
