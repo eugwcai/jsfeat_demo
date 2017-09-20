@@ -1,108 +1,75 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
 <head>
-<title>AWE Marker AR demo</title>
-<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
-<meta charset="utf-8"/>
-<style type="text/css">
-* {
-  margin: 0;
-  padding: 0;
-}
-#container {
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  right: 0;
-  overflow: hidden;
-}
-#debugCanvas {
-  position: absolute;
-  z-index: 999;
-  opacity: 0.5;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-</style>
+  <title>Treehouse Logo in three.js</title>
+  <meta charset="utf-8">
 </head>
-<body>
-  <canvas id="debugCanvas"></canvas>
-<div id="container"></div>
-<script type="text/javascript" src="js/js_awe/awe-v8.js"></script>
-<script type="text/javascript" src="js/js_awe/awe-loader.js"></script>
-<script type="text/javascript">
-//   DEBUG = true;
-  window.addEventListener('load', function() {
-    window.awe.init({
-      device_type: awe.AUTO_DETECT_DEVICE_TYPE,
-      settings: {
-        container_id: 'container',
-        default_camera_position: { x:0, y:0, z:0 },
-        default_lights:[
-          {
-            id: 'ambient_light',
-            type: 'ambient',
-            color: 0x666666
-          },
-          {
-            id: 'hemi',
-            type: 'hemisphere',
-            color: 0xCCCCCC,
-          },
-        ],
-      },
-      ready: function() {
-        var d = '?_='+Date.now();
-        
-        awe.util.require([
-          {
-            capabilities: ['gum','webgl'],
-            files: [ 
-              // base libraries
-              [ 'js/js_awe/awe-standard-dependencies.js', 'js/js_awe/awe-standard.js'+d],
-              // plugin dependencies
-              ['awe-jsartoolkit-dependencies.js','js/js_awe/plugins/StereoEffect.js', 'js/js_awe/plugins/VREffect.js'],
-              // plugins
-              ['awe.marker_ar.js'+d,'js/js_awe/plugins/awe.rendering_effects.js'+d]
-            ],
-            success: function() { 
-              awe.setup_scene();
-              
-              awe.settings.update({data:{value: 'ar'}, where:{id: 'view_mode'}})
+<body style="margin: 0;">
 
-              awe.pois.add({ id: 'fixed_poi', position: { x: 100, y: 0, z: -250 }, visible: true, scale: { x: 10, y: 10, z: 10 },  rotation: { x: 110, y: 185, z: -20 }});
-              awe.projections.add({ 
-                id: 'fixed_projection', 
-                geometry: { path: 'models/objects/f14d.obj'},
-                position: { x: 0, y: 0, z: 0 },
-                material:{ type: 'phong', color: 0xb0c4de  }, 
-              }, { poi_id: 'fixed_poi' });
+  <script src="js/three.min.js"></script>
+  <script src="js/OrbitControls.js"></script>
 
-              // animate the fixed POI
-              awe.projections.update({
-                data:{
-                  animation: { duration: 5, persist: 0, repeat: Infinity },
-                  rotation: { z:360  },
-                },
-                where:{ id:"fixed_projection" },
-              });
+  <script>
 
-              awe.plugins.view('render_effects').enable();
-              awe.plugins.view('jsartoolkit').enable();
-            },
-          },
-          {
-            capabilities: [],
-            success: function() { 
-              document.body.innerHTML = '<p>Try this demo in the latest version of Chrome or Firefox on a PC or Android device</p>';
-            },
-          },
-        ]);
-      }
-    });
-  });
-</script>
+    // Set up the scene, camera, and renderer as global variables.
+    var scene, camera, renderer;
+
+    init();
+    animate();
+
+    // Sets up the scene.
+    function init() {
+
+      // Create the scene and set the scene size.
+      scene = new THREE.Scene();
+      var WIDTH = window.innerWidth,
+          HEIGHT = window.innerHeight;
+
+      // Create a renderer and add it to the DOM.
+      renderer = new THREE.WebGLRenderer({antialias:true});
+      renderer.setSize(WIDTH, HEIGHT);
+      document.body.appendChild(renderer.domElement);
+
+      // Create a camera, zoom it out from the model a bit, and add it to the scene.
+      camera = new THREE.PerspectiveCamera(45, WIDTH / HEIGHT, 0.1, 20000);
+      camera.position.set(0,6,0);
+      scene.add(camera);
+
+      // Set the background color of the scene.
+      //renderer.setClearColorHex(0x333F47, 1);
+
+      // Create a light, set its position, and add it to the scene.
+      var light = new THREE.PointLight(0xffffff);
+      light.position.set(-100,200,100);
+      scene.add(light);
+
+      // Load in the mesh and add it to the scene.
+      var loader = new THREE.JSONLoader();
+      loader.load( "models/finaltest.json", function(geometry){
+        var material = new THREE.MeshLambertMaterial({color: 0x55B663});
+        mesh = new THREE.Mesh(geometry, material);
+        scene.add(mesh);
+      });
+
+      // Add OrbitControls so that we can pan around with the mouse.
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+    }
+
+
+    // Renders the scene and updates the render as needed.
+    function animate() {
+
+      // Read more about requestAnimationFrame at http://www.paulirish.com/2011/requestanimationframe-for-smart-animating/
+      requestAnimationFrame(animate);
+      
+      // Render the scene.
+      renderer.render(scene, camera);
+      controls.update();
+
+    }
+
+  </script>
+
 </body>
 </html>
