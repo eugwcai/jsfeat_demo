@@ -31,7 +31,7 @@
   <canvas id="debugCanvas"></canvas>
 <div id="container"></div>
 <script type="text/javascript" src="js/js_awe/awe-v8.js"></script>
-<script type="text/javascript" src="js/js_awe/js/awe-loader.js"></script>
+<script type="text/javascript" src="js/js_awe/awe-loader.js"></script>
 <script type="text/javascript">
 //   DEBUG = true;
   window.addEventListener('load', function() {
@@ -61,11 +61,11 @@
             capabilities: ['gum','webgl'],
             files: [ 
               // base libraries
-              [ '../../js/awe-standard-dependencies.js', 'js/js_awe/js/awe-standard.js'+d],
+              [ 'js/js_awe/awe-standard-dependencies.js', 'js/js_awe/awe-standard.js'+d],
               // plugin dependencies
-              ['awe-jsartoolkit-dependencies.js','js/js_awe/js/plugins/StereoEffect.js', 'js/js_awe/js/plugins/VREffect.js'],
+              ['awe-jsartoolkit-dependencies.js','js/js_awe/plugins/StereoEffect.js', 'js/js_awe/plugins/VREffect.js'],
               // plugins
-              ['awe.marker_ar.js'+d,'js/js_awe/js/plugins/awe.rendering_effects.js'+d]
+              ['awe.marker_ar.js'+d,'js/js_awe/plugins/awe.rendering_effects.js'+d]
             ],
             success: function() { 
               awe.setup_scene();
