@@ -32,7 +32,84 @@
         }
         </style>
     </head>
-    <body>
+    <body style="z-index:-10">
+            <div id="wrapper" style="min-height:200px; width:100%"></div>
+      <!--<script src="js/three.min.js"></script>
+      <script src="js/OrbitControls.js"></script>
+          <script>
+
+            // Set up the scene, camera, and renderer as global variables.
+            var scene, camera, renderer, mesh;
+
+            //init();
+            //animate();
+
+            // Sets up the scene.
+            function init() {
+
+              // Create the scene and set the scene size.
+              scene = new THREE.Scene();
+              var WIDTH = window.innerWidth,
+              HEIGHT = window.innerHeight - 200;
+
+
+              // Create a renderer and add it to the DOM.
+              renderer = new THREE.WebGLRenderer({alpha:true, antialias:true});
+              renderer.setClearColor( 0x000000, 0 );
+              renderer.setSize(WIDTH, HEIGHT);
+              document.body.appendChild(renderer.domElement);
+
+              // Create a camera, zoom it out from the model a bit, and add it to the scene.
+              camera = new THREE.PerspectiveCamera(45, WIDTH / HEIGHT, 0.1, 20000);
+              camera.position.set(0,6,0);
+              scene.add(camera);
+
+              // Set the background color of the scene.
+              //renderer.setClearColorHex(0x333F47, 1);
+
+              // Create a light, set its position, and add it to the scene.
+              var light = new THREE.PointLight(0xffffff);
+              light.position.set(-50,200,100);
+              scene.add(light);
+
+              // Load in the mesh and add it to the scene.
+              var loader = new THREE.JSONLoader();
+              loader.load( "models/finaltest.json", function(geometry){
+                var material = new THREE.MeshLambertMaterial({color: 0xb0c4de});
+                mesh = new THREE.Mesh(geometry, material);
+                mesh.position.set(-3.5,0,-1.5);
+                mesh.rotation.set(-1.1708,-2.2688,0);
+                mesh.scale.set(.1,.1,.1);
+                scene.add(mesh);
+              });
+
+              // Add OrbitControls so that we can pan around with the mouse.
+              controls = new THREE.OrbitControls(camera, renderer.domElement);
+              controls.enabled = false;
+            }
+
+            function rotate() {
+              mesh.rotation.y -= 0.01 * 3;
+            }
+
+            // Renders the scene and updates the render as needed.
+            function animate() {
+
+              // Read more about requestAnimationFrame at http://www.paulirish.com/2011/requestanimationframe-for-smart-animating/
+              requestAnimationFrame(animate);
+              try{
+              rotate();
+              }catch(error){
+
+              }
+              // Render the scene.
+              renderer.render(scene, camera);
+              controls.update();
+
+            }
+
+          </script>-->
+
             <div style="position:fixed; left:5px; top:5px; color:green; background-color:black; font-size:20px" id="info1"></div>
 
             <!--<video id="webcam" width="640" height="480" style="display:none;"></video>
@@ -42,10 +119,11 @@
                 <div id="log" class="alert alert-info" style="display:none"></div>-->
             <video id="webcam" style="display:none;"></video>
             <div id="container">
-                <img id="graphic1" src="resources/ui_v3_1.png" style="position: fixed; top:0; left: 0; z-index: 2; width:20%" />
-                <canvas id="canvas"></canvas>
-                <img id="graphic3" src="resources/ui_v3_3.png" style="position: fixed; right: 0; top:200px; z-index:4; width:25%; margin-right:-15px"/>
-                <img id="graphic2" src="resources/ui_v3_2.png" style="position: fixed; bottom:0; left: 0; z-index: 3; width:50%"/>
+                <img id="graphic1" src="resources/ui_v3_1.png" style="position: fixed; top:0; left: 0; z-index: 2; width:20%; display:none" />
+                <canvas id="canvas" style="position:fixed; top:0; z-index:-5"></canvas>
+                <img id="graphic3" src="resources/ui_v3_3.png" style="position: fixed; right: 0; top:0; z-index:4; width:25%; margin-right:-15px; display:none"/>
+                <img id="graphic2" src="resources/ui_v3_2.png" style="position: fixed; bottom:0; left: 0; z-index: 3; width:50%; display:none"/>
+                <img id="airforcelogo" src="resources/airforce_logo.png" style="position: fixed; bottom:15px; right:15px; z-index: 6; width:10%"/>
             </div>
 
             <!-- IMPORT IMAGE PATTERN HERE -->
@@ -583,6 +661,10 @@
             function render_pattern_shape(ctx) {  // render a shape or create UI when object is detected (good matches > 8)
                 // get the projected pattern corners
                 document.getElementById("info1").innerHTML = "OBJECT FOUND";
+                   document.getElementById("graphic1").style.display = "block";
+                document.getElementById("graphic2").style.display = "block";
+                document.getElementById("graphic3").style.display = "block";
+                
                 var shape_pts = tCorners(homo3x3.data, pattern_preview.cols*2, pattern_preview.rows*2);
                 ctx.strokeStyle = "rgb(0,255,0)";
                 ctx.beginPath();
