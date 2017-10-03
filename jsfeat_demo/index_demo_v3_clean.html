@@ -1,59 +1,35 @@
-
-<!doctype html>
-
+<!DOCTYPE html>
 <html lang="en">
     <head>
+        <title>Augmented Reality Investment Project</title>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
         <meta name="apple-touch-fullscreen" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black" />
-        <title>Augmented Reality Investment Project</title>
 
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Sans:regular,bold|Inconsolata|PT+Sans:400,700">
         <link rel="stylesheet" href="css/bootstrap.css">
         <link rel="stylesheet" href="css/jsfeat.css">
-
-        <script type="text/javascript">
-          var _gaq = _gaq || [];
-          _gaq.push(['_setAccount', 'UA-36419199-1']);
-          _gaq.push(['_trackPageview']);
-          (function() {
-            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-          })();
-        </script>
-        <style>
-        html, body {
-            overflow: hidden;
-            position: relative;
-            height: 100%;
-        }
-        </style>
     </head>
     <body>
-            <div style="position:fixed; left:5px; top:5px; color:green; background-color:black; font-size:20px" id="info1"></div>
+        <div id="foundMsg"></div>
+        <video id="webcam"></video>
+        <div id="container">
+            <img id="graphic1" class="graphic" src="resources/ui_v3_1.png" />
+            <canvas id="canvas"></canvas>
+            <img id="graphic3" class="graphic" src="resources/ui_v3_3.png" />
+            <img id="graphic2" class="graphic" src="resources/ui_v3_2.png" />
+            <img id="airforcelogo" src="resources/airforce_logo.png" />
+            <input type="button" class="disabled" id="uibutton" value="Undetected" disabled/>
+        </div>
 
-            <!--<video id="webcam" width="640" height="480" style="display:none;"></video>
-            <div style=" width:640px;height:480px" id="container">
-                <canvas id="canvas" width="640" height="480"></canvas>
-                <div id="no_rtc" class="alert alert-error" style="display:none;"></div>
-                <div id="log" class="alert alert-info" style="display:none"></div>-->
-            <video id="webcam" style="display:none;"></video>
-            <div id="container">
-                <img id="graphic1" src="resources/ui_v3_1.png" style="display: none; position: fixed; top:0; left: 0; z-index: 2; width:20%" />
-                <canvas id="canvas"></canvas>
-                <img id="graphic3" src="resources/ui_v3_3.png" style="display: none; position: fixed; right: 0; top:200px; z-index:4; width:25%; margin-right:-15px"/>
-                <img id="graphic2" src="resources/ui_v3_2.png" style="display: none; position: fixed; bottom:0; left: 0; z-index: 3; width:50%"/>
-            </div>
-
-            <!-- IMPORT IMAGE PATTERN HERE -->
-            <!--<img id="pattern" src="resources/tail_number_640_480.png" style="visibility:hidden">-->
-            <!--<img id="pattern" src="resources/artargetimage_640_480.png" style="visibility:hidden">-->
-            <img id="pattern" src="resources/tail_number_840_630.png" style="visibility:hidden">
-            <!--<img id="pattern" src="resources/artargetimage_256x192.png" style="visibility:hidden">-->
-            
+        <!-- IMPORT IMAGE PATTERN HERE -->
+        <img id="pattern" src="resources/tail_number_840_630.png" style="visibility:hidden">
+        <!--<img id="pattern" src="resources/tail_number_640_480.png" style="visibility:hidden">-->
+        <!--<img id="pattern" src="resources/artargetimage_640_480.png" style="visibility:hidden">-->
+        <!--<img id="pattern" src="resources/artargetimage_256x192.png" style="visibility:hidden">-->
+        
         <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
         <script type="text/javascript" src="build/jsfeat-min.js"></script>
         <script type="text/javascript" src="js/compatibility.js"></script>
@@ -64,36 +40,38 @@
             "use strict";
             // loading webcam stream
             var video = document.getElementById('webcam');
-            // loading webcam stream
+            var canvas = document.getElementById('canvas');
+            var container = document.getElementById('container');
 
-            $( window ).resize(function() {
-            var vpw = $(window).width();
-            var vph = $(window).height();
-            document.getElementById("webcam").width = vpw;
-            document.getElementById("webcam").height = vph;
-            document.getElementById("container").style.width = vpw + "px";
-            document.getElementById("container").style.height = vph + "px";
-            document.getElementById("canvas").width = vpw;
-            document.getElementById("canvas").height = vph;
+            $( window ).resize(function() { // resize canvas on window size change
+                var vpw = $(window).width();
+                var vph = $(window).height();
+                container.style.width = vpw + "px";
+                container.style.height = vph + "px";
+                canvas.width = vpw;
+                canvas.height = vph;
+                video.width = vpw;
+                video.height = vph;
             });
 
+            // initialize canvas size for camera stream
             var vpw = $(window).width();
             var vph = $(window).height();
-            document.getElementById("webcam").width = vpw;
-            document.getElementById("webcam").height = vph;
-            document.getElementById("container").style.width = vpw + "px";
-            document.getElementById("container").style.height = vph + "px";
-            document.getElementById("canvas").width = vpw;
-            document.getElementById("canvas").height = vph;
+            container.style.width = vpw + "px";
+            container.style.height = vph + "px";
+            canvas.width = vpw;
+            canvas.height = vph;
 
-            /**/
+            video.width = vpw;
+            video.height = vph;
             video.setAttribute('autoplay', '');
             video.setAttribute('muted', '');
             video.setAttribute('playsinline', '');
-            /**/
 
-            var facingMode = "environment";
+            // set parameters for stream (mobile browser compatible)
+            var facingMode = "environment"; 
             var detected = false;
+            var bound = false;
             var constraints = {
                 audio: false,
                 video: {
@@ -101,7 +79,6 @@
                 }
             }
 
-            var canvas = document.getElementById('canvas');
             try {
                 var attempts = 0;
                 var readyListener = function(event) {
@@ -124,9 +101,7 @@
                     demo_app(width, height);
                     compatibility.requestAnimationFrame(tick);
                 };
-
                 video.addEventListener('loadeddata', readyListener);
-                //compatibility.getUserMedia({video: true}, function(stream) { for just browser compatibility
                 compatibility.getUserMedia(constraints, function(stream) { // mobile compatibility
                 try {
                     video.src = compatibility.URL.createObjectURL(stream);
@@ -180,24 +155,18 @@
                 this.eigen_thres = 25;
                 this.match_threshold = 48;
 
-                this.show_UI = function() {
-                    var asd = 0;
-                }
-
                 this.train_pattern = function() {
                     var lev=0, i=0;
                     var sc = 1.0;
                     var max_pattern_size = 512;
                     var max_per_level = 300;
-                    var sc_inc = Math.sqrt(2.0); // magic number ;)
+                    var sc_inc = Math.sqrt(2.0);
 
-                    //
-                    var img = document.getElementById("pattern");
+                    var img = document.getElementById("pattern"); // process image pattern to detect
                     ctx.drawImage(document.getElementById("pattern"), 0, 0);
                     var imageData = ctx.getImageData(0, 0, img.width, img.height);
                     var col = img.naturalWidth;
                     var row = img.naturalHeight;
-                    //    
 
                     var lev0_img = new jsfeat.matrix_t(col, row, jsfeat.U8_t | jsfeat.C1_t);
                     var lev_img = new jsfeat.matrix_t(col, row, jsfeat.U8_t | jsfeat.C1_t);
@@ -208,8 +177,6 @@
                     var sc0 = Math.min(max_pattern_size/col, max_pattern_size/row);
                     new_width = (col*sc0)|0;
                     new_height = (row*sc0)|0;
-
-
                     
                     stat.start("grayscale");
                     jsfeat.imgproc.grayscale(imageData.data, col, row, img_u8); // Defines values for img_u8
@@ -273,32 +240,6 @@
                 };
             }
 
-            function fade(element) {
-                var op = 1;  // initial opacity
-                var timer = setInterval(function () {
-                    if (op <= 0.1){
-                        clearInterval(timer);
-                        element.style.display = 'none';
-                    }
-                    element.style.opacity = op;
-                    element.style.filter = 'alpha(opacity=' + op * 100 + ")";
-                    op -= op * 0.1;
-                }, 50);
-            }
-
-            function unfade(element) {
-                var op = 0.1;  // initial opacity
-                element.style.display = 'block';
-                var timer = setInterval(function () {
-                    if (op >= 1){
-                        clearInterval(timer);
-                    }
-                    element.style.opacity = op;
-                    element.style.filter = 'alpha(opacity=' + op * 100 + ")";
-                    op += op * 0.1;
-                }, 10);
-            }
-
             function demo_app(videoWidth, videoHeight) {
                 canvasWidth  = canvas.width;
                 canvasHeight = canvas.height;
@@ -337,9 +278,9 @@
                 gui.add(options, "blur_size", 3, 9).step(1);
                 gui.add(options, "lap_thres", 1, 100);
                 gui.add(options, "eigen_thres", 1, 100);
-                gui.add(options, "show_UI");
+                gui.add(options, "match_threshold", 16, 128);
                 gui.add(options, "train_pattern");
-
+                
                 stat.add("grayscale");
                 stat.add("gauss blur");
                 stat.add("keypoints");
@@ -356,10 +297,6 @@
                     var vph = $(window).height();
                     ctx.drawImage(video, 0, 0, vpw, vph);
                     var imageData = ctx.getImageData(0, 0, vpw, vph);  
-                    //ewq
-                    //ctx.drawImage(document.getElementById("large_image"), 0, 0);
-                    //var imageData = ctx.getImageData(0, 0, 640, 480);
-                    //
 
                     stat.start("grayscale");
                     jsfeat.imgproc.grayscale(imageData.data, vpw, vph, img_u8); // Defines values for img_u8
@@ -402,7 +339,7 @@
                         if(good_matches > 8){
                             render_pattern_shape(ctx);         
                         }else{
-                            document.getElementById("info1").innerHTML = "";
+                            document.getElementById("foundMsg").innerHTML = "";
                         }
                     }
 
@@ -610,14 +547,66 @@
                 }
             }
 
+            function fade(element) {
+                var op = 1;  // initial opacity
+                var timer = setInterval(function () {
+                    if (op <= 0.1){
+                        clearInterval(timer);
+                        element.style.display = 'none';
+                    }
+                    element.style.opacity = op;
+                    element.style.filter = 'alpha(opacity=' + op * 100 + ")";
+                    op -= op * 0.1;
+                }, 50);
+            }
+
+            function fadeQuick(element){
+                element.style.opacity = "0.1";
+                element.style.display = "none";
+            }
+
+            function unfade(element) {
+                var op = 0.1;  // initial opacity
+                element.style.display = 'block';
+                var timer = setInterval(function () {
+                    if (op >= 1){
+                        clearInterval(timer);
+                    }
+                    element.style.opacity = op;
+                    element.style.filter = 'alpha(opacity=' + op * 100 + ")";
+                    op += op * 0.25;
+                }, 10);
+            }
+
+            document.getElementById("uibutton").addEventListener("click", function(){  // unbind graphic data for detected image pattern
+                var uiButt = document.getElementById("uibutton");
+                fadeQuick(document.getElementById("graphic1"));  // hide graphics
+                fadeQuick(document.getElementById("graphic2"));
+                fadeQuick(document.getElementById("graphic3"));
+                uiButt.disabled = true;  // disable button 
+                uiButt.classList.remove("enabled");
+                uiButt.classList.add("disabled");
+                uiButt.style.backgroundColor = "rgba(211,211,211,0.3)";
+                uiButt.value = "Undetected";
+                detected=false;                     
+            });
+
             function render_pattern_shape(ctx) {  // render a shape or create UI when object is detected (good matches > 8)
                 // get the projected pattern corners
-                document.getElementById("info1").innerHTML = "OBJECT FOUND";
+                document.getElementById("foundMsg").innerHTML = "OBJECT FOUND";
                 if(detected == false){
-                    unfade(document.getElementById("graphic1"));
+                    detected = true;
+                    var uiButt = document.getElementById("uibutton");
+                    unfade(document.getElementById("graphic1"));  // show graphics
                     unfade(document.getElementById("graphic2"));
                     unfade(document.getElementById("graphic3"));
-                    detected = true;
+                    setTimeout(function(){  // enable unbind button after graphics load
+                        uiButt.disabled = false;
+                        uiButt.classList.remove("disabled");
+                        uiButt.classList.add("enabled");
+                        uiButt.style.backgroundColor = "rgba(0, 255, 0, 0.3)";
+                        uiButt.value = "Unbind";
+                    }, 1000);
                 }
 
                 var shape_pts = tCorners(homo3x3.data, pattern_preview.cols*2, pattern_preview.rows*2);

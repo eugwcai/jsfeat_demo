@@ -56,7 +56,7 @@
       loader.load( "models/finaltest.json", function(geometry){
         var material = new THREE.MeshLambertMaterial({color: 0xb0c4de});
         mesh = new THREE.Mesh(geometry, material);
-        mesh.position.set(-2.5,0,-1.5);
+        mesh.position.set(-1.5,0,-1.5);
         mesh.rotation.set(-1.1708,-2.2688,0);
         mesh.scale.set(.05,.05,.05);
         scene.add(mesh);
@@ -65,7 +65,7 @@
       loader.load( "models/logo.json", function(geometry){
         var material = new THREE.MeshLambertMaterial({color: 0x5d8aa8});
         logo = new THREE.Mesh(geometry, material);
-        logo.position.set(2.5,0,1.5);
+        logo.position.set(1.5,0,1.5);
         logo.rotation.set(-1.5707,0.2,0.05);
         logo.scale.set(.05,.05,.05);
         scene.add(logo);
