@@ -72,9 +72,8 @@ html, body {
   left:0;
   z-index: 6; 
   opacity: 0.2;
-  width: 400px;
-  height: 400px;
-  display: none;
+  width: 200px;
+  height: 200px;
 }
 
 .disabled{ 
