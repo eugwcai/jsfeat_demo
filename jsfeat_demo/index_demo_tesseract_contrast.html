@@ -272,10 +272,10 @@
                     //ctx.drawImage(video, 0, 0, col/2, row/2, 0, 0, 1.25*col, row);
                     ctx.drawImage(video, 0, 0, col, row);
                     var imageData = ctx.getImageData(0, 0, col, row);
-                    var img_u8 = new jsfeat.matrix_t(col, row, jsfeat.U8C1_t);
-                    var img_u7 = new jsfeat.matrix_t(col, row, jsfeat.U8C1_t);
-                    jsfeat.imgproc.grayscale(imageData.data, col, row, img_u7);
-                    jsfeat.imgproc.equalize_histogram(img_u7, img_u8);
+                   var img_u8 = new jsfeat.matrix_t(col, row, jsfeat.U8C1_t);
+                    jsfeat.imgproc.grayscale(imageData.data, col, row, img_u8);
+                    jsfeat.imgproc.equalize_histogram(img_u8, img_u8);
+                    jsfeat.imgproc.gaussian_blur(img_u8, img_u8, 3);
                     //jsfeat.imgproc.resample(img_u8, lev0_img, new_width, new_height);  // modify lev0_img data array field
                     var data_u32 = new Uint32Array(imageData.data.buffer);
                     var i = img_u8.cols*img_u8.rows, pix = 0;
