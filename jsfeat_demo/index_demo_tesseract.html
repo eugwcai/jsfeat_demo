@@ -18,6 +18,7 @@
         <div id="container">
             <img id="graphic1" class="graphic" src="resources/ui_v3_1.png" />
             <canvas id="canvas"></canvas>
+            <canvas id="crop"></canvas>
             <img id="graphic3" class="graphic" src="resources/ui_v3_3.png" />
             <img id="graphic2" class="graphic" src="resources/ui_v3_2.png" />
             <img id="airforcelogo" src="resources/airforce_logo.png" />
@@ -269,9 +270,15 @@
                     var col = vpw;
                     var row = vph;
                     //, 0, 0, col, row);
-                    ctx.drawImage(video, 0, 0, 200, 200, 0, 0, col, row);
+
+                    var crop = document.getElementById("crop");
+                    ctx2 = crop.getContext('2d');
+
+                    ctx2.drawImage(video, 0, 0, 200, 200, 0, 0, 200, 200);
                     //ctx.drawImage(video, 0, 0, col, row);
-                    var imageData = ctx.getImageData(0, 0, col, row);
+                    var imageData = ctx2.getImageData(0, 0, 200, 200);
+
+
                     var img_u8 = new jsfeat.matrix_t(col, row, jsfeat.U8C1_t);
                     jsfeat.imgproc.grayscale(imageData.data, col, row, img_u8);
                     var data_u32 = new Uint32Array(imageData.data.buffer);
@@ -281,8 +288,12 @@
                         pix = img_u8.data[i];
                         data_u32[i] = alpha | (pix << 16) | (pix << 8) | pix;
                     }
-                    ctx.putImageData(imageData,0,0);
-                    const snapshot = canvas.toDataURL("image/png");
+
+                    
+                    ctx2.putImageData(imageData,0,0);
+
+
+                    const snapshot = crop.toDataURL("image/png");
                     document.querySelector('#airforcelogo').setAttribute('src', snapshot);
                     Tesseract.recognize(snapshot)
                     .then(function(result){
