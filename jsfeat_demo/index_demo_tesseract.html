@@ -271,7 +271,7 @@
                     //, 0, 0, col, row);
                     ctx.drawImage(video, 0, 0, 200, 200, 0, 0, col, row);
                     //ctx.drawImage(video, 0, 0, col, row);
-                    var imageData = ctx.getImageData(0, 0, 200, 200);
+                    var imageData = ctx.getImageData(0, 0, col, row);
                     var img_u8 = new jsfeat.matrix_t(col, row, jsfeat.U8C1_t);
                     jsfeat.imgproc.grayscale(imageData.data, col, row, img_u8);
                     var data_u32 = new Uint32Array(imageData.data.buffer);
