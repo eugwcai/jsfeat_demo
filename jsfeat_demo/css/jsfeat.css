@@ -52,6 +52,31 @@ html, body {
  width:10%;
 }
 
+#captureTailEnable{
+ position: fixed; 
+ bottom:15px; 
+ right:215px; 
+ z-index: 6; 
+}
+
+#captureTailButton{
+  position: fixed; 
+ bottom:15px; 
+ right:50%; 
+ z-index: 6; 
+}
+
+.rectangle{
+  position: fixed; 
+  top:0;
+  left:0;
+  z-index: 6; 
+  opacity: 0.2;
+  width: 400px;
+  height: 400px;
+  display: none;
+}
+
 .disabled{ 
     color:#d3d3d3;
     pointer-events:none;

@@ -334,13 +334,13 @@
 
                     // render result back to canvas
                     var data_u32 = new Uint32Array(imageData.data.buffer);
-                    //render_corners(screen_corners, num_corners, data_u32, 640);
+                    render_corners(screen_corners, num_corners, data_u32, 640);
 
                     // render pattern and matches
                     var num_matches = 0;
                     var good_matches = 0;
                     if(pattern_preview) {
-                        //render_mono_image(pattern_preview.data, data_u32, pattern_preview.cols, pattern_preview.rows, 640);
+                        render_mono_image(pattern_preview.data, data_u32, pattern_preview.cols, pattern_preview.rows, 640);
                         stat.start("matching");
                         num_matches = match_pattern();
                         good_matches = find_transform(matches, num_matches);
@@ -350,7 +350,7 @@
                     ctx.putImageData(imageData, 0, 0);
 
                     if(num_matches) {
-                        //render_matches(ctx, matches, num_matches);
+                        render_matches(ctx, matches, num_matches);
                         if(good_matches > 8){
                             render_pattern_shape(ctx);         
                         }else{

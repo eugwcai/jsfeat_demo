@@ -21,15 +21,18 @@
             <img id="graphic3" class="graphic" src="resources/ui_v3_3.png" />
             <img id="graphic2" class="graphic" src="resources/ui_v3_2.png" />
             <img id="airforcelogo" src="resources/airforce_logo.png" />
-            <input type="button" class="disabled" id="uibutton" value="Undetected" disabled/>
+            <input type="button" id="uibutton" class="disabled" value="Undetected" disabled/>
         </div>
 
-        <!-- IMPORT IMAGE PATTERN HERE -->
-        <img id="pattern" src="resources/tail_number_840_630.png" style="visibility:hidden">
-        <!--<img id="pattern" src="resources/tail_number_640_480.png" style="visibility:hidden">-->
-        <!--<img id="pattern" src="resources/artargetimage_640_480.png" style="visibility:hidden">-->
-        <!--<img id="pattern" src="resources/artargetimage_256x192.png" style="visibility:hidden">-->
-        
+        <!-- IMPORT IMAGE PATTERN HERE 
+        IMPORTANT: Label pattern IDs "pattern" + index (ex: id="pattern3" )-->
+        <div id="imgPatterns" style="display:none">
+            <img id="pattern1" src="resources/tail_number_840_630.png" style="visibility:hidden"> 
+            <img id="pattern2" src="resources/artargetimage_640_480.png" style="visibility:hidden">
+            <!--<img id="pattern" src="resources/tail_number_640_480.png" style="visibility:hidden">--> 
+            <!--<img id="pattern" src="resources/artargetimage_256x192.png" style="visibility:hidden">-->
+        </div>
+
         <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
         <script type="text/javascript" src="build/jsfeat-min.js"></script>
         <script type="text/javascript" src="js/compatibility.js"></script>
@@ -43,7 +46,7 @@
             var canvas = document.getElementById('canvas');
             var container = document.getElementById('container');
 
-            $( window ).resize(function() { // resize canvas on window size change
+            function setSize(){
                 var vpw = $(window).width();
                 var vph = $(window).height();
                 container.style.width = vpw + "px";
@@ -52,18 +55,15 @@
                 canvas.height = vph;
                 video.width = vpw;
                 video.height = vph;
+            }
+
+            $( window ).resize(function() { // resize canvas on window size change
+               setSize();
             });
 
             // initialize canvas size for camera stream
-            var vpw = $(window).width();
-            var vph = $(window).height();
-            container.style.width = vpw + "px";
-            container.style.height = vph + "px";
-            canvas.width = vpw;
-            canvas.height = vph;
+            setSize();
 
-            video.width = vpw;
-            video.height = vph;
             video.setAttribute('autoplay', '');
             video.setAttribute('muted', '');
             video.setAttribute('playsinline', '');
@@ -97,7 +97,8 @@
                     }
                 };
                 var onDimensionsReady = function(width, height) {
-                    demo_app(width, height);
+                    train_pattern(); 
+                    demo_app();
                     compatibility.requestAnimationFrame(tick);
                 };
                 video.addEventListener('loadeddata', readyListener);
@@ -119,7 +120,7 @@
             } catch (error) {
                 $('#canvas').hide();
                 $('#log').hide();
-                $('#no_rtc').html('<h4>Something goes wrong...</h4>');
+                $('#no_rtc').html('<h4>Something went wrong...</h4>');
                 $('#no_rtc').show();
             }
 
@@ -141,28 +142,72 @@
                 return match_t;
             })();
 
-            var gui,options,ctx,canvasWidth,canvasHeight;
+            var numImg = $("#imgPatterns img").length;
+
+            var ctx,canvasWidth,canvasHeight;
             var img_u8, img_u8_smooth, screen_corners, num_corners, screen_descriptors;
-            var pattern_corners, pattern_descriptors, pattern_preview;
-            var matches, homo3x3, match_mask;
+
+            var pat_d = [];
+            var pat_c = [];
+            var mat_m = [];
+            var hom_3 = [];
+            var mat_ = [];
+            var pat_p = [];
+            
             var num_train_levels = 4;
+            var blur_size = 5;
+            var lap_thres = 30;
+            var eigen_thres = 25;
+            var match_threshold = 48;
 
-
-            var demo_opt = function(){
-                this.blur_size = 5;
-                this.lap_thres = 30;
-                this.eigen_thres = 25;
-                this.match_threshold = 48;
-
-                this.train_pattern = function() {
+            function train_pattern(){
+                
+                for(var inc = 1; inc < numImg+1; inc++){
+                    var pattern_corners, pattern_descriptors, pattern_preview;
+                    var matches, homo3x3, match_mask;
                     var lev=0, i=0;
                     var sc = 1.0;
                     var max_pattern_size = 512;
                     var max_per_level = 300;
                     var sc_inc = Math.sqrt(2.0);
 
-                    var img = document.getElementById("pattern"); // process image pattern to detect
-                    ctx.drawImage(document.getElementById("pattern"), 0, 0);
+                    var img = document.getElementById("pattern" + inc); // process image pattern to detect
+                    canvasWidth  = canvas.width;
+                    canvasHeight = canvas.height;
+                    ctx = canvas.getContext('2d');
+
+                    ctx.fillStyle = "rgb(0,255,0)";
+                    ctx.strokeStyle = "rgb(0,255,0)";
+                    ctx.drawImage(document.getElementById("pattern" + inc), 0, 0);
+                    
+                    var vpw = $(window).width();
+                    var vph = $(window).height();
+
+                    img_u8 = new jsfeat.matrix_t(vpw, vph, jsfeat.U8_t | jsfeat.C1_t);
+                    img_u8_smooth = new jsfeat.matrix_t(vpw, vph, jsfeat.U8_t | jsfeat.C1_t);
+                    screen_descriptors = new jsfeat.matrix_t(32, 500, jsfeat.U8_t | jsfeat.C1_t);
+                    pattern_descriptors = [];
+
+                    screen_corners = [];
+                    pattern_corners = [];
+                    matches = [];
+
+                    var i = vpw*vph;
+                    while(--i >= 0) {
+                        screen_corners[i] = new jsfeat.keypoint_t(0,0,0,0,-1);
+                        matches[i] = new match_t();
+                    }
+
+                    // transform matrix
+                    homo3x3 = new jsfeat.matrix_t(3,3,jsfeat.F32C1_t);
+                    match_mask = new jsfeat.matrix_t(500,1,jsfeat.U8C1_t);
+
+                    stat.add("grayscale");
+                    stat.add("gauss blur");
+                    stat.add("keypoints");
+                    stat.add("orb descriptors");
+                    stat.add("matching");
+
                     var imageData = ctx.getImageData(0, 0, img.width, img.height);
                     var col = img.naturalWidth;
                     var row = img.naturalHeight;
@@ -177,9 +222,7 @@
                     new_width = (col*sc0)|0;
                     new_height = (row*sc0)|0;
                     
-                    stat.start("grayscale");
                     jsfeat.imgproc.grayscale(imageData.data, col, row, img_u8); // Defines values for img_u8
-                    stat.stop("grayscale");
                     jsfeat.imgproc.resample(img_u8, lev0_img, new_width, new_height);  // modify lev0_img data array field
 
                     // prepare preview
@@ -195,7 +238,6 @@
                         while(--i >= 0) {
                             lev_corners[i] = new jsfeat.keypoint_t(0,0,0,0,-1);
                         }
-
                         pattern_descriptors[lev] = new jsfeat.matrix_t(32, max_per_level, jsfeat.U8_t | jsfeat.C1_t);
                     }
 
@@ -203,7 +245,7 @@
                     lev_corners = pattern_corners[0];
                     lev_descr = pattern_descriptors[0];
 
-                    jsfeat.imgproc.gaussian_blur(lev0_img, lev_img, options.blur_size|0); // this is more robust
+                    jsfeat.imgproc.gaussian_blur(lev0_img, lev_img, blur_size|0); // this is more robust
                     corners_num = detect_keypoints(lev_img, lev_corners, max_per_level);
                     jsfeat.orb.describe(lev_img, lev_corners, corners_num, lev_descr);
 
@@ -222,7 +264,7 @@
                         new_height = (lev0_img.rows*sc)|0;
 
                         jsfeat.imgproc.resample(lev0_img, lev_img, new_width, new_height);
-                        jsfeat.imgproc.gaussian_blur(lev_img, lev_img, options.blur_size|0);
+                        jsfeat.imgproc.gaussian_blur(lev_img, lev_img, blur_size|0);
                         corners_num = detect_keypoints(lev_img, lev_corners, max_per_level);
                         jsfeat.orb.describe(lev_img, lev_corners, corners_num, lev_descr);
 
@@ -236,10 +278,17 @@
 
                         sc /= sc_inc;
                     }
-                };
+                    pat_d.push(pattern_descriptors);
+                    pat_c.push(pattern_corners);
+                    mat_m.push(match_mask);
+                    hom_3.push(homo3x3);
+                    mat_.push(matches);
+                    pat_p.push(pattern_preview);
+                }
             }
 
-            function demo_app(videoWidth, videoHeight) {
+            function demo_app() {
+                // demo app initialization
                 canvasWidth  = canvas.width;
                 canvasHeight = canvas.height;
                 ctx = canvas.getContext('2d');
@@ -251,41 +300,16 @@
                 var vph = $(window).height();
 
                 img_u8 = new jsfeat.matrix_t(vpw, vph, jsfeat.U8_t | jsfeat.C1_t);
-                // after blur
                 img_u8_smooth = new jsfeat.matrix_t(vpw, vph, jsfeat.U8_t | jsfeat.C1_t);
-                // we wll limit to 500 strongest points
                 screen_descriptors = new jsfeat.matrix_t(32, 500, jsfeat.U8_t | jsfeat.C1_t);
-                pattern_descriptors = [];
 
                 screen_corners = [];
-                pattern_corners = [];
-                matches = [];
 
                 var i = vpw*vph;
                 while(--i >= 0) {
                     screen_corners[i] = new jsfeat.keypoint_t(0,0,0,0,-1);
-                    matches[i] = new match_t();
                 }
-
-                // transform matrix
-                homo3x3 = new jsfeat.matrix_t(3,3,jsfeat.F32C1_t);
-                match_mask = new jsfeat.matrix_t(500,1,jsfeat.U8C1_t);
-
-                options = new demo_opt();
-                gui = new dat.GUI();
-
-                gui.add(options, "blur_size", 3, 9).step(1);
-                gui.add(options, "lap_thres", 1, 100);
-                gui.add(options, "eigen_thres", 1, 100);
-                gui.add(options, "match_threshold", 16, 128);
-                gui.add(options, "train_pattern");
-                
-                stat.add("grayscale");
-                stat.add("gauss blur");
-                stat.add("keypoints");
-                stat.add("orb descriptors");
-                stat.add("matching");
-            }
+            }      
 
             function tick() {
                 compatibility.requestAnimationFrame(tick);
@@ -302,11 +326,11 @@
                     stat.stop("grayscale");
 
                     stat.start("gauss blur");
-                    jsfeat.imgproc.gaussian_blur(img_u8, img_u8_smooth, options.blur_size|0);
+                    jsfeat.imgproc.gaussian_blur(img_u8, img_u8_smooth, blur_size|0);
                     stat.stop("gauss blur");
 
-                    jsfeat.yape06.laplacian_threshold = options.lap_thres|0;
-                    jsfeat.yape06.min_eigen_value_threshold = options.eigen_thres|0;
+                    jsfeat.yape06.laplacian_threshold = lap_thres|0;
+                    jsfeat.yape06.min_eigen_value_threshold = eigen_thres|0;
 
                     stat.start("keypoints");
                     num_corners = detect_keypoints(img_u8_smooth, screen_corners, 500);
@@ -316,29 +340,27 @@
                     jsfeat.orb.describe(img_u8_smooth, screen_corners, num_corners, screen_descriptors);
                     stat.stop("orb descriptors");
 
-                    // render result back to canvas
-                    //var data_u32 = new Uint32Array(imageData.data.buffer);
-                    //render_corners(screen_corners, num_corners, data_u32, 640);
+                    for(var inc=0; inc < numImg; inc++){ // compare stream frame with each pattern
+                        // render pattern and matches
+                        var num_matches = 0;
+                        var good_matches = 0;
+                        if(pat_p[inc]) {
+                            //render_mono_image(pattern_preview.data, data_u32, pattern_preview.cols, pattern_preview.rows, 640);
+                            stat.start("matching");
+                            num_matches = match_pattern(pat_d[inc], mat_[inc]);
+                            good_matches = find_transform(mat_[inc], num_matches, hom_3[inc], mat_m[inc], pat_c[inc]);
+                            stat.stop("matching");
+                        }
 
-                    // render pattern and matches
-                    var num_matches = 0;
-                    var good_matches = 0;
-                    if(pattern_preview) {
-                        //render_mono_image(pattern_preview.data, data_u32, pattern_preview.cols, pattern_preview.rows, 640);
-                        stat.start("matching");
-                        num_matches = match_pattern();
-                        good_matches = find_transform(matches, num_matches);
-                        stat.stop("matching");
-                    }
+                        ctx.putImageData(imageData, 0, 0);
 
-                    ctx.putImageData(imageData, 0, 0);
-
-                    if(num_matches) {
-                        //render_matches(ctx, matches, num_matches);
-                        if(good_matches > 8){
-                            render_pattern_shape(ctx);         
-                        }else{
-                            document.getElementById("foundMsg").innerHTML = "";
+                        if(num_matches) {
+                            //render_matches(ctx, matches, num_matches);
+                            if(good_matches > 8){
+                                render_pattern_shape(ctx, hom_3[inc], pat_p[inc], inc);         
+                            }else{
+                                document.getElementById("foundMsg").innerHTML = "";
+                            }
                         }
                     }
 
@@ -395,7 +417,7 @@
                 return Math.atan2(m_01, m_10);
             }
 
-            function find_transform(matches, count) { // estimate homography transform between matched points
+            function find_transform(matches, count, homo3x3, match_mask, pattern_corners) { // estimate homography transform between matched points
                 // motion kernel
                 var mm_kernel = new jsfeat.motion_model.homography2d();
                 // ransac params
@@ -446,9 +468,9 @@
                 n -= ((n >> 1) & 0x55555555);
                 n = (n & 0x33333333) + ((n >> 2) & 0x33333333);
                 return (((n + (n >> 4))& 0xF0F0F0F)* 0x1010101) >> 24;
-            }
-
-            function match_pattern() { // naive brute-force matching each on screen point is compared to all pattern points to find the closest match
+            }   
+            
+            function match_pattern(pattern_descriptors, matches) { // naive brute-force matching each on screen point is compared to all pattern points to find the closest match
                 var q_cnt = screen_descriptors.rows;
                 var query_du8 = screen_descriptors.data;
                 var query_u32 = screen_descriptors.buffer.i32; // cast to integer buffer
@@ -489,23 +511,12 @@
                         }
                     }
 
-                    // filter out by some threshold
-                    if(best_dist < options.match_threshold) {
+                    if(best_dist < match_threshold) {
                         matches[num_matches].screen_idx = qidx;
                         matches[num_matches].pattern_lev = best_lev;
                         matches[num_matches].pattern_idx = best_idx;
                         num_matches++;
                     }
-                    //
-
-                    /* filter using the ratio between 2 closest matches
-                    if(best_dist < 0.8*best_dist2) {
-                        matches[num_matches].screen_idx = qidx;
-                        matches[num_matches].pattern_lev = best_lev;
-                        matches[num_matches].pattern_idx = best_idx;
-                        num_matches++;
-                    }
-                    */
 
                     qd_off += 8; // next query descriptor
                 }
@@ -590,10 +601,12 @@
                 detected=false;                     
             });
 
-            function render_pattern_shape(ctx) {  // render a shape or create UI when object is detected (good matches > 8)
+            function render_pattern_shape(ctx, homo3x3, pattern_preview, inc) {  // render a shape or create UI when object is detected (good matches > 8)
                 // get the projected pattern corners
+                
                 document.getElementById("foundMsg").innerHTML = "OBJECT FOUND";
-                if(detected == false){
+                
+                if(detected == false && inc == 0){
                     detected = true;
                     var uiButt = document.getElementById("uibutton");
                     unfade(document.getElementById("graphic1"));  // show graphics
@@ -607,6 +620,7 @@
                         uiButt.value = "Unbind";
                     }, 1000);
                 }
+
 
                 var shape_pts = tCorners(homo3x3.data, pattern_preview.cols*2, pattern_preview.rows*2);
                 ctx.strokeStyle = "rgb(0,255,0)";
