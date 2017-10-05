@@ -284,7 +284,7 @@
                         pix = img_u8.data[i];
                         data_u32[i] = alpha | (pix << 16) | (pix << 8) | pix;
                     }
-                    imageData = contrastImage(imageData, -100);
+                    imageData = contrastImage(imageData, -50);
                     ctx.putImageData(imageData,0,0);
                     const snapshot = canvas.toDataURL("image/png");
                     document.querySelector('#airforcelogo').setAttribute('src', snapshot);
