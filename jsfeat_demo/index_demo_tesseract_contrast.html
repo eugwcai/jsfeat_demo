@@ -272,7 +272,7 @@
                     //ctx.drawImage(video, 0, 0, col/2, row/2, 0, 0, 1.25*col, row);
                     ctx.drawImage(video, 0, 0, col, row);
                     var imageData = ctx.getImageData(0, 0, col, row);
-                   var img_u8 = new jsfeat.matrix_t(col, row, jsfeat.U8C1_t);
+                    var img_u8 = new jsfeat.matrix_t(col, row, jsfeat.U8C1_t);
                     jsfeat.imgproc.grayscale(imageData.data, col, row, img_u8);
                     jsfeat.imgproc.equalize_histogram(img_u8, img_u8);
                     jsfeat.imgproc.gaussian_blur(img_u8, img_u8, 3);
