@@ -46,10 +46,10 @@
             var capArea = document.getElementById("tailCaptureArea");
             var vpw = $(window).width();
             var vph = $(window).height();
-            var roiRad = $(".rectangle").width()/2;
-            var roiRad = $(".rectangle").height()/2;
-            capArea.style.left = (vpw/2)-roiRad + "px"; 
-            capArea.style.top = (vph/2)-roiRad + "px";
+            var roiXRad = $(".rectangle").width()/2;
+            var roiYRad = $(".rectangle").height()/2;
+            capArea.style.left = (vpw/2)-roiXRad + "px"; 
+            capArea.style.top = (vph/2)-roiYRad + "px";
 
 
             Tesseract.recognize(pattern)
