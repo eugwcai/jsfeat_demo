@@ -312,7 +312,11 @@
                         pix = img_u8.data[i];
                         data_u32[i] = alpha | (pix << 16) | (pix << 8) | pix;
                     }
+<<<<<<< HEAD
                     imageData = contrastImage(imageData, 50, 250);
+=======
+                    imageData = contrastImage(imageData, 0, 125);
+>>>>>>> c2ef9908e956257c25a9982ee3d715af27d01263
                     ctx2.putImageData(imageData,0,0);
                     
 
