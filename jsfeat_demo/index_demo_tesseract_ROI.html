@@ -15,10 +15,12 @@
     <body>
         <div id="foundMsg"></div>
         <video id="webcam"></video>
+        <div id="tailnumber" style="position:fixed; width:100%; text-align:center; z-index: 6; font-weight:bold;">Tail Number: </div>
         <div id="container">
             <img id="graphic1" class="graphic" src="resources/ui_v3_1.png" />
             <canvas id="canvas" style="position:fixed; top:0; left:0;"></canvas>
             <canvas id="crop"></canvas>
+            
             <img id="graphic3" class="graphic" src="resources/ui_v3_3.png" />
             <img id="graphic2" class="graphic" src="resources/ui_v3_2.png" />
             <img id="airforcelogo" src="resources/airforce_logo.png" />
@@ -70,6 +72,14 @@
                 canvas.height = vph;
                 video.width = vpw;
                 video.height = vph;
+                var capArea = document.getElementById("tailCaptureArea");
+                var vpw = $(window).width();
+                var vph = $(window).height();
+                var roiXRad = $(".rectangle").width()/2;
+                var roiYRad = $(".rectangle").height()/2;
+                capArea.style.left = (vpw/2)-roiXRad + "px"; 
+                capArea.style.top = (vph/2)-roiYRad + "px";
+
             });
             // initialize canvas size for camera stream
             var vpw = $(window).width();
@@ -312,7 +322,8 @@
                     Tesseract.recognize(snapshot)
                     .then(function(result){
                     console.log(result)
-                        alert(result.text);
+                        //alert(result.text);
+                        document.getElementById("tailnumber").innerHTML = "Tail Number: " + result.text;
                     });
             }
             function contrastImage(imageData, contrast, brightness) {  // contrast as an integer percent  
